@@ -28,7 +28,7 @@ namespace QuantConnectStubsGenerator.Utility
         {
             if (!_classes.ContainsKey(cls.Type))
             {
-                throw new ArgumentException($"'{cls.Type.ToPythonString()}' has not been registered using AddClass");
+                throw new ArgumentException($"'{cls.Type.ToLanguageString()}' has not been registered using AddClass");
             }
 
             type = GetParentType(type);

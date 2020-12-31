@@ -8,12 +8,13 @@ using QuantConnectStubsGenerator.Model;
 
 namespace QuantConnectStubsGenerator.Parser
 {
-    public abstract class BaseParser : CSharpSyntaxWalker
+    public abstract class BaseParser<T> : CSharpSyntaxWalker
+        where T : ILanguageType<T>
     {
         protected readonly ParseContext _context;
         protected readonly SemanticModel _model;
 
-        protected readonly TypeConverter _typeConverter;
+        protected ITypeConverter<T> TypeConverter;
 
         protected Namespace _currentNamespace;
         protected Class _currentClass;
@@ -22,8 +23,6 @@ namespace QuantConnectStubsGenerator.Parser
         {
             _context = context;
             _model = model;
-
-            _typeConverter = new TypeConverter(model);
         }
 
         public override void VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
@@ -94,7 +93,7 @@ namespace QuantConnectStubsGenerator.Parser
         /// </summary>
         protected virtual void EnterClass(BaseTypeDeclarationSyntax node)
         {
-            _currentClass = _currentNamespace.GetClassByType(_typeConverter.GetType(node, true));
+            _currentClass = _currentNamespace.GetClassByType(TypeConverter.GetType(node, true));
         }
 
         private void ExitClass()
@@ -185,53 +184,6 @@ namespace QuantConnectStubsGenerator.Parser
         /// <summary>
         /// Format a default C# value into a default Python value.
         /// </summary>
-        protected string FormatValue(string value)
-        {
-            // null to None
-            if (value == "null")
-            {
-                return "None";
-            }
-
-            // Boolean true
-            if (value == "true")
-            {
-                return "True";
-            }
-
-            // Boolean false
-            if (value == "false")
-            {
-                return "False";
-            }
-
-            // Numbers
-            if (Regex.IsMatch(value, "^-?[0-9.]+m?$"))
-            {
-                // If the value is a number, remove a potential suffix like "m" in 1.0m
-                if (value.EndsWith("m"))
-                {
-                    return value.Substring(0, value.Length - 1);
-                }
-
-                return value;
-            }
-
-            // Strings
-            if (Regex.IsMatch(value, "^@?\"[^\"]+\"$"))
-            {
-                if (value.StartsWith("@"))
-                {
-                    value = value.Substring(1);
-                }
-
-                // Escape backslashes
-                value = value.Replace("\\", "\\\\");
-
-                return value;
-            }
-
-            return "...";
-        }
+        protected abstract string FormatValue(string value);
     }
 }

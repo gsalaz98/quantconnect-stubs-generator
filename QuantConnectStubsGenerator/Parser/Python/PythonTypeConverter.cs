@@ -7,11 +7,11 @@ namespace QuantConnectStubsGenerator.Parser
     /// <summary>
     /// The TypeConverter is responsible for converting AST nodes into PythonType instances.
     /// </summary>
-    public class TypeConverter
+    public class PythonTypeConverter : ITypeConverter<PythonType>
     {
         private readonly SemanticModel _model;
 
-        public TypeConverter(SemanticModel model)
+        public PythonTypeConverter(SemanticModel model)
         {
             _model = model;
         }
@@ -114,10 +114,10 @@ namespace QuantConnectStubsGenerator.Parser
                 }
             }
 
-            return CSharpTypeToPythonType(type, skipPythonTypeCheck);
+            return (PythonType)TypeToTargetLanguageType(type, skipPythonTypeCheck);
         }
 
-        private string GetTypeName(ISymbol symbol)
+        public string GetTypeName(ISymbol symbol)
         {
             var nameParts = new List<string>();
 
@@ -146,7 +146,7 @@ namespace QuantConnectStubsGenerator.Parser
         /// This method handles conversions like the one from System.String to str.
         /// If the Type object doesn't need to be converted, the originally provided type is returned.
         /// </summary>
-        private PythonType CSharpTypeToPythonType(PythonType type, bool skipPythonTypeCheck = false)
+        public ILanguageType<PythonType> TypeToTargetLanguageType(ILanguageType<PythonType> type, bool skipPythonTypeCheck = false)
         {
             if (type.Namespace == "System" && !skipPythonTypeCheck)
             {

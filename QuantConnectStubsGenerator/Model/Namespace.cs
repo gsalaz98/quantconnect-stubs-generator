@@ -34,7 +34,7 @@ namespace QuantConnectStubsGenerator.Model
                 return _classes[key];
             }
 
-            throw new ArgumentException($"No class has been registered with type '{type.ToPythonString()}'");
+            throw new ArgumentException($"No class has been registered with type '{type.ToLanguageString()}'");
         }
 
         public bool HasClass(PythonType type)

@@ -28,7 +28,7 @@ namespace QuantConnectStubsGenerator.Model
 
         public bool IsEnum()
         {
-            return InheritsFrom.Any(type => type.ToPythonString() == "System.Enum");
+            return InheritsFrom.Any(type => type.ToLanguageString() == "System.Enum");
         }
 
         public IEnumerable<PythonType> GetUsedTypes()

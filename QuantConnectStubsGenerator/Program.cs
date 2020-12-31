@@ -32,7 +32,7 @@ namespace QuantConnectStubsGenerator
 
             try
             {
-                new Generator(args[0], args[1], args[2]).Run();
+                new PythonGenerator(args[0], args[1], args[2]).Run();
             }
             catch (Exception e)
             {

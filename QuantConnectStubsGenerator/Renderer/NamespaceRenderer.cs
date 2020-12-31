@@ -80,7 +80,7 @@ namespace QuantConnectStubsGenerator.Renderer
 
             foreach (var type in typeAliases)
             {
-                WriteLine($"{type.Alias} = {type.ToPythonString(true)}");
+                WriteLine($"{type.Alias} = {type.ToLanguageString(true)}");
             }
 
             WriteLine();
@@ -90,7 +90,7 @@ namespace QuantConnectStubsGenerator.Renderer
         {
             var typeVars = usedTypes
                 .Where(type => type.IsNamedTypeParameter)
-                .Select(type => type.ToPythonString())
+                .Select(type => type.ToLanguageString())
                 .Distinct()
                 .ToList();
 

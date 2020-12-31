@@ -11,15 +11,15 @@ using QuantConnectStubsGenerator.Renderer;
 
 namespace QuantConnectStubsGenerator
 {
-    public class Generator
+    public class PythonGenerator
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(Generator));
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(PythonGenerator));
 
         private readonly string _leanPath;
         private readonly string _runtimePath;
         private readonly string _outputDirectory;
 
-        public Generator(string leanPath, string runtimePath, string outputDirectory)
+        public PythonGenerator(string leanPath, string runtimePath, string outputDirectory)
         {
             _leanPath = FormatPath(leanPath);
             _runtimePath = FormatPath(runtimePath);
@@ -95,9 +95,9 @@ namespace QuantConnectStubsGenerator
             var context = new ParseContext();
 
             // Parse all syntax trees using all parsers
-            ParseSyntaxTrees<ClassParser>(context, syntaxTrees, compilation);
-            ParseSyntaxTrees<PropertyParser>(context, syntaxTrees, compilation);
-            ParseSyntaxTrees<MethodParser>(context, syntaxTrees, compilation);
+            ParseSyntaxTrees<ClassParser, PythonType>(context, syntaxTrees, compilation);
+            ParseSyntaxTrees<PropertyParser, PythonType>(context, syntaxTrees, compilation);
+            ParseSyntaxTrees<MethodParser, PythonType>(context, syntaxTrees, compilation);
 
             // Perform post-processing on all parsed classes
             foreach (var ns in context.GetNamespaces())
@@ -135,10 +135,12 @@ namespace QuantConnectStubsGenerator
             GenerateSetup();
         }
 
-        private void ParseSyntaxTrees<T>(
+        private void ParseSyntaxTrees<T, P>(
             ParseContext context,
             IEnumerable<SyntaxTree> syntaxTrees,
-            CSharpCompilation compilation) where T : BaseParser
+            CSharpCompilation compilation)
+            where T : BaseParser<P>
+            where P : ILanguageType<P>
         {
             foreach (var tree in syntaxTrees)
             {

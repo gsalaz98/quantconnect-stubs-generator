@@ -14,7 +14,7 @@ namespace QuantConnectStubsGenerator.Tests.Model
                 Alias = "AnyAlias"
             };
 
-            Assert.AreEqual("AnyAlias", type.ToPythonString());
+            Assert.AreEqual("AnyAlias", type.ToLanguageString());
         }
 
         [Test]
@@ -25,7 +25,7 @@ namespace QuantConnectStubsGenerator.Tests.Model
                 Alias = "AnyAlias"
             };
 
-            Assert.AreEqual("typing.Any", type.ToPythonString(true));
+            Assert.AreEqual("typing.Any", type.ToLanguageString(true));
         }
 
         [Test]
@@ -36,7 +36,7 @@ namespace QuantConnectStubsGenerator.Tests.Model
                 IsNamedTypeParameter = true
             };
 
-            Assert.AreEqual("QuantConnect_Data_MyClass_TKey", type.ToPythonString());
+            Assert.AreEqual("QuantConnect_Data_MyClass_TKey", type.ToLanguageString());
         }
 
         [Test]
@@ -44,7 +44,7 @@ namespace QuantConnectStubsGenerator.Tests.Model
         {
             var type = new PythonType("MyClass", "QuantConnect");
 
-            Assert.AreEqual("QuantConnect.MyClass", type.ToPythonString());
+            Assert.AreEqual("QuantConnect.MyClass", type.ToLanguageString());
         }
 
         [Test]
@@ -52,7 +52,7 @@ namespace QuantConnectStubsGenerator.Tests.Model
         {
             var type = new PythonType("MyClass");
 
-            Assert.AreEqual("MyClass", type.ToPythonString());
+            Assert.AreEqual("MyClass", type.ToLanguageString());
         }
 
         [Test]
@@ -64,7 +64,7 @@ namespace QuantConnectStubsGenerator.Tests.Model
 
             Assert.AreEqual(
                 "QuantConnect.MyClass[QuantConnect.MyOtherClass, QuantConnect.MyOtherClass2]",
-                type.ToPythonString());
+                type.ToLanguageString());
         }
 
         [Test]
@@ -75,7 +75,7 @@ namespace QuantConnectStubsGenerator.Tests.Model
             type.TypeParameters.Add(new PythonType("str"));
             type.TypeParameters.Add(new PythonType("str"));
 
-            Assert.AreEqual("typing.Callable[[str, str], str]", type.ToPythonString());
+            Assert.AreEqual("typing.Callable[[str, str], str]", type.ToLanguageString());
         }
     }
 }

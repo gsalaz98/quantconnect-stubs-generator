@@ -6,7 +6,7 @@ using QuantConnectStubsGenerator.Utility;
 
 namespace QuantConnectStubsGenerator.Parser
 {
-    public class PropertyParser : BaseParser
+    public class PropertyParser : PythonParser
     {
         public PropertyParser(ParseContext context, SemanticModel model) : base(context, model)
         {
@@ -14,19 +14,19 @@ namespace QuantConnectStubsGenerator.Parser
 
         public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node)
         {
-            VisitProperty(node, _typeConverter.GetType(node.Type), node.Identifier.Text);
+            VisitProperty(node, TypeConverter.GetType(node.Type), node.Identifier.Text);
         }
 
         public override void VisitFieldDeclaration(FieldDeclarationSyntax node)
         {
-            VisitField(node, _typeConverter.GetType(node.Declaration.Type));
+            VisitField(node, TypeConverter.GetType(node.Declaration.Type));
         }
 
         public override void VisitEventDeclaration(EventDeclarationSyntax node)
         {
             var type = new PythonType("List", "typing")
             {
-                TypeParameters = {_typeConverter.GetType(node.Type)}
+                TypeParameters = {TypeConverter.GetType(node.Type)}
             };
 
             VisitProperty(node, type, node.Identifier.Text);
@@ -36,7 +36,7 @@ namespace QuantConnectStubsGenerator.Parser
         {
             var type = new PythonType("List", "typing")
             {
-                TypeParameters = {_typeConverter.GetType(node.Declaration.Type)}
+                TypeParameters = {TypeConverter.GetType(node.Declaration.Type)}
             };
 
             VisitField(node, type);
@@ -99,7 +99,7 @@ namespace QuantConnectStubsGenerator.Parser
             }
 
             // Security.Data is of type dynamic but can be used like it is of type DynamicSecurityData
-            if (_currentClass.Type.ToPythonString() == "QuantConnect.Securities.Security" && name == "Data")
+            if (_currentClass.Type.ToLanguageString() == "QuantConnect.Securities.Security" && name == "Data")
             {
                 type = new PythonType("DynamicSecurityData", "QuantConnect.Securities");
             }
@@ -107,7 +107,7 @@ namespace QuantConnectStubsGenerator.Parser
             var property = new Property(name)
             {
                 Type = type,
-                ReadOnly = _typeConverter.GetSymbol(node) is IPropertySymbol symbol && symbol.IsReadOnly,
+                ReadOnly = TypeConverter.GetSymbol(node) is IPropertySymbol symbol && symbol.IsReadOnly,
                 Static = _currentClass.Static || HasModifier(node, "static"),
                 Abstract = _currentClass.Interface || HasModifier(node, "abstract")
             };
@@ -122,7 +122,7 @@ namespace QuantConnectStubsGenerator.Parser
             {
                 property.Summary = AppendSummary(
                     property.Summary,
-                    $"This property contains the int value of a member of the {originalType.ToPythonString()} enum.");
+                    $"This property contains the int value of a member of the {originalType.ToLanguageString()} enum.");
             }
 
             if (HasModifier(node, "protected"))

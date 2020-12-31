@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace QuantConnectStubsGenerator.Model
 {
-    public class PythonType : ILanguageType<PythonType>
+    public class CppType : ILanguageType<CppType>
     {
         public string Name { get; set; }
         public string Namespace { get; set; }
@@ -12,11 +12,11 @@ namespace QuantConnectStubsGenerator.Model
         public string Alias { get; set; }
         public bool IsNamedTypeParameter { get; set; }
 
-        public IList<PythonType> TypeParameters { get; set; } = new List<PythonType>();
+        public IList<CppType> TypeParameters { get; set; } = new List<CppType>();
 
         public bool IsAction { get; set; }
 
-        public PythonType(string name, string ns = null)
+        public CppType(string name, string ns = null)
         {
             Name = name;
             Namespace = ns;
@@ -84,7 +84,7 @@ namespace QuantConnectStubsGenerator.Model
             return str;
         }
 
-        public bool Equals(PythonType other)
+        public bool Equals(CppType other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;

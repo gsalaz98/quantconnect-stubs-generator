@@ -8,7 +8,7 @@ using QuantConnectStubsGenerator.Utility;
 
 namespace QuantConnectStubsGenerator.Parser
 {
-    public class ClassParser : BaseParser
+    public class ClassParser : PythonParser
     {
         public ClassParser(ParseContext context, SemanticModel model) : base(context, model)
         {
@@ -46,7 +46,7 @@ namespace QuantConnectStubsGenerator.Parser
 
         private Class ParseClass(BaseTypeDeclarationSyntax node)
         {
-            return new Class(_typeConverter.GetType(node, true))
+            return new Class(TypeConverter.GetType(node, true))
             {
                 Static = HasModifier(node, "static"),
                 Summary = ParseSummary(node),
@@ -84,7 +84,7 @@ namespace QuantConnectStubsGenerator.Parser
                 return types;
             }
 
-            var currentType = _typeConverter.GetType(node, true);
+            var currentType = TypeConverter.GetType(node, true);
 
             if (symbol.BaseType != null)
             {
@@ -93,13 +93,13 @@ namespace QuantConnectStubsGenerator.Parser
 
                 if (!ShouldSkipBaseType(currentType, ns, name))
                 {
-                    types.Add(_typeConverter.GetType(symbol.BaseType));
+                    types.Add(TypeConverter.GetType(symbol.BaseType));
                 }
             }
 
             foreach (var typeSymbol in symbol.Interfaces)
             {
-                var type = _typeConverter.GetType(typeSymbol);
+                var type = TypeConverter.GetType(typeSymbol);
 
                 // In C# a class can be extended multiple times with different amounts of generics
                 // In Python this is not possible, so we keep the type with the most generics
@@ -160,8 +160,8 @@ namespace QuantConnectStubsGenerator.Parser
             }
 
             // Ensure classes don't extend from both typing.List and typing.Dict, that causes conflicting definitions
-            var listType = types.FirstOrDefault(type => type.ToPythonString().StartsWith("typing.List["));
-            var dictType = types.FirstOrDefault(type => type.ToPythonString().StartsWith("typing.Dict["));
+            var listType = types.FirstOrDefault(type => type.ToLanguageString().StartsWith("typing.List["));
+            var dictType = types.FirstOrDefault(type => type.ToLanguageString().StartsWith("typing.Dict["));
 
             if (listType != null && dictType != null)
             {

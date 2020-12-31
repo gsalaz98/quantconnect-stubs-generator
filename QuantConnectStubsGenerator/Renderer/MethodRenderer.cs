@@ -39,7 +39,7 @@ namespace QuantConnectStubsGenerator.Renderer
             args.AddRange(method.Parameters.Select(ParameterToString));
             var argsStr = string.Join(", ", args);
 
-            WriteLine($"def {method.Name}({argsStr}) -> {method.ReturnType.ToPythonString()}:");
+            WriteLine($"def {method.Name}({argsStr}) -> {method.ReturnType.ToLanguageString()}:");
             WriteSummary(method.Summary, true);
             WriteLine("...".Indent());
 
@@ -48,7 +48,7 @@ namespace QuantConnectStubsGenerator.Renderer
 
         private string ParameterToString(Parameter parameter)
         {
-            var str = $"{parameter.Name}: {parameter.Type.ToPythonString()}";
+            var str = $"{parameter.Name}: {parameter.Type.ToLanguageString()}";
 
             if (parameter.VarArgs)
             {

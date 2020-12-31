@@ -34,7 +34,7 @@ namespace QuantConnectStubsGenerator.Renderer
 
             if (property.Type != null)
             {
-                Write($": {property.Type.ToPythonString()}");
+                Write($": {property.Type.ToLanguageString()}");
             }
 
             if (property.Value != null)
@@ -66,7 +66,7 @@ namespace QuantConnectStubsGenerator.Renderer
             }
 
             // Add the getter
-            WriteLine($"def {property.Name}(self) -> {property.Type.ToPythonString()}:");
+            WriteLine($"def {property.Name}(self) -> {property.Type.ToLanguageString()}:");
             WriteSummary(property.Summary, true);
             WriteLine("...".Indent());
 
@@ -85,7 +85,7 @@ namespace QuantConnectStubsGenerator.Renderer
             }
 
             // Add the setter
-            WriteLine($"def {property.Name}(self, value: {property.Type.ToPythonString()}):");
+            WriteLine($"def {property.Name}(self, value: {property.Type.ToLanguageString()}):");
             WriteSummary(property.Summary, true);
             WriteLine("...".Indent());
 

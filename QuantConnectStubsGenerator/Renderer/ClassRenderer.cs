@@ -27,18 +27,18 @@ namespace QuantConnectStubsGenerator.Renderer
 
             if (cls.Type.TypeParameters.Count > 0)
             {
-                var types = cls.Type.TypeParameters.Select(type => type.ToPythonString());
+                var types = cls.Type.TypeParameters.Select(type => type.ToLanguageString());
                 inherited.Add($"typing.Generic[{string.Join(", ", types)}]");
             }
 
             foreach (var inheritedType in cls.InheritsFrom)
             {
-                inherited.Add(inheritedType.ToPythonString());
+                inherited.Add(inheritedType.ToLanguageString());
             }
 
             if (cls.MetaClass != null)
             {
-                inherited.Add($"metaclass={cls.MetaClass.ToPythonString()}");
+                inherited.Add($"metaclass={cls.MetaClass.ToLanguageString()}");
             }
 
             if (inherited.Count > 0)

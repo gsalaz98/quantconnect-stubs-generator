@@ -8,7 +8,7 @@ using QuantConnectStubsGenerator.Utility;
 
 namespace QuantConnectStubsGenerator.Parser
 {
-    public class MethodParser : BaseParser
+    public class MethodParser : PythonParser
     {
         public MethodParser(ParseContext context, SemanticModel model) : base(context, model)
         {
@@ -20,7 +20,7 @@ namespace QuantConnectStubsGenerator.Parser
                 node,
                 node.Identifier.Text,
                 node.ParameterList.Parameters,
-                _typeConverter.GetType(node.ReturnType));
+                TypeConverter.GetType(node.ReturnType));
 
             // Make the current class extend from typing.Iterable if this is an applicable GetEnumerator() method
             ExtendIterableIfNecessary(node);
@@ -45,17 +45,17 @@ namespace QuantConnectStubsGenerator.Parser
                 node,
                 node.Identifier.Text,
                 node.ParameterList.Parameters,
-                _typeConverter.GetType(node.ReturnType));
+                TypeConverter.GetType(node.ReturnType));
         }
 
         public override void VisitIndexerDeclaration(IndexerDeclarationSyntax node)
         {
-            var type = _typeConverter.GetType(node.Type);
+            var type = TypeConverter.GetType(node.Type);
 
             // Improve the autocompletion on data[symbol] if data is a Slice and symbol a Symbol
             // In C# this is of type dynamic, which by default gets converted to typing.Any
             // To improve the autocompletion a bit we convert it to Union[TradeBar, QuoteBar, List[Tick], Any]
-            if (_currentClass?.Type.ToPythonString() == "QuantConnect.Data.Slice")
+            if (_currentClass?.Type.ToLanguageString() == "QuantConnect.Data.Slice")
             {
                 type = new PythonType("Union", "typing")
                 {
@@ -74,7 +74,7 @@ namespace QuantConnectStubsGenerator.Parser
 
             VisitMethod(node, "__getitem__", node.ParameterList.Parameters, type);
 
-            var symbol = _typeConverter.GetSymbol(node);
+            var symbol = TypeConverter.GetSymbol(node);
             if (symbol is IPropertySymbol propertySymbol && !propertySymbol.IsReadOnly)
             {
                 VisitMethod(node, "__setitem__", node.ParameterList.Parameters, new PythonType("None"));
@@ -196,7 +196,7 @@ namespace QuantConnectStubsGenerator.Parser
             if (returnTypeIsEnum)
             {
                 returnsParts.Add(
-                    $"This method returns the int value of a member of the {originalReturnType.ToPythonString()} enum.");
+                    $"This method returns the int value of a member of the {originalReturnType.ToLanguageString()} enum.");
             }
 
             if (returnsParts.Count > 0)
@@ -230,7 +230,7 @@ namespace QuantConnectStubsGenerator.Parser
         private Parameter ParseParameter(ParameterSyntax syntax, string methodName)
         {
             var originalName = syntax.Identifier.Text;
-            var parameter = new Parameter(FormatParameterName(originalName), _typeConverter.GetType(syntax.Type));
+            var parameter = new Parameter(FormatParameterName(originalName), TypeConverter.GetType(syntax.Type));
 
             if (syntax.Modifiers.Any(modifier => modifier.Text == "params"))
             {
@@ -291,7 +291,7 @@ namespace QuantConnectStubsGenerator.Parser
                 return;
             }
 
-            var parsedReturnType = _typeConverter.GetType(node.ReturnType);
+            var parsedReturnType = TypeConverter.GetType(node.ReturnType);
 
             // Some GetEnumerator() methods return an IEnumerator, some return an IEnumerator<T>
             // typing.Iterable requires a type parameter, so we don't extend it if an IEnumerator is returned
@@ -318,7 +318,7 @@ namespace QuantConnectStubsGenerator.Parser
                 return;
             }
 
-            VisitMethod(node, "__contains__", node.ParameterList.Parameters, _typeConverter.GetType(node.ReturnType));
+            VisitMethod(node, "__contains__", node.ParameterList.Parameters, TypeConverter.GetType(node.ReturnType));
 
             if (_currentClass.Methods.All(m => m.Name != "__len__"))
             {
@@ -333,7 +333,7 @@ namespace QuantConnectStubsGenerator.Parser
         /// </summary>
         private void ImprovePythonAccessorIfNecessary(Method newMethod)
         {
-            if (newMethod.Parameters.Count != 1 || newMethod.Parameters[0].Type.ToPythonString() != "typing.Type")
+            if (newMethod.Parameters.Count != 1 || newMethod.Parameters[0].Type.ToLanguageString() != "typing.Type")
             {
                 return;
             }

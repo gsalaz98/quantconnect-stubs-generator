@@ -16,10 +16,20 @@ namespace QuantConnectStubsGenerator.Model
 
         public bool IsAction { get; set; }
 
-        public PythonType(string name, string ns = null)
+        public PythonType()
+        {
+        }
+
+        public PythonType New(string name, string ns = null)
         {
             Name = name;
             Namespace = ns;
+            return this;
+        }
+
+        public PythonType(string name, string ns = null)
+        {
+            New(name, ns);
         }
 
         public string GetBaseName()

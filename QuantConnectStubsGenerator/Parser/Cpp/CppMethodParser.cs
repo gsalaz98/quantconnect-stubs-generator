@@ -8,9 +8,9 @@ using QuantConnectStubsGenerator.Utility;
 
 namespace QuantConnectStubsGenerator.Parser
 {
-    public class MethodParser : PythonParser
+    public class CppMethodParser : CppParser
     {
-        public MethodParser(ParseContext<PythonType> context, SemanticModel model) : base(context, model)
+        public CppMethodParser(ParseContext<CppType> context, SemanticModel model) : base(context, model)
         {
         }
 
@@ -20,7 +20,7 @@ namespace QuantConnectStubsGenerator.Parser
                 node,
                 node.Identifier.Text,
                 node.ParameterList.Parameters,
-                TypeConverter.GetType(node.ReturnType));
+                (CppType)TypeConverter.GetType(node.ReturnType));
 
             // Make the current class extend from typing.Iterable if this is an applicable GetEnumerator() method
             ExtendIterableIfNecessary(node);
@@ -36,7 +36,7 @@ namespace QuantConnectStubsGenerator.Parser
                 return;
             }
 
-            VisitMethod(node, "__init__", node.ParameterList.Parameters, new PythonType("None"));
+            VisitMethod(node, "__init__", node.ParameterList.Parameters, new CppType("None"));
         }
 
         public override void VisitDelegateDeclaration(DelegateDeclarationSyntax node)
@@ -45,7 +45,7 @@ namespace QuantConnectStubsGenerator.Parser
                 node,
                 node.Identifier.Text,
                 node.ParameterList.Parameters,
-                TypeConverter.GetType(node.ReturnType));
+                (CppType)TypeConverter.GetType(node.ReturnType));
         }
 
         public override void VisitIndexerDeclaration(IndexerDeclarationSyntax node)
@@ -57,17 +57,17 @@ namespace QuantConnectStubsGenerator.Parser
             // To improve the autocompletion a bit we convert it to Union[TradeBar, QuoteBar, List[Tick], Any]
             if (_currentClass?.Type.ToLanguageString() == "QuantConnect.Data.Slice")
             {
-                type = new PythonType("Union", "typing")
+                type = new CppType("Union", "typing")
                 {
                     TypeParameters =
                     {
-                        new PythonType("TradeBar", "QuantConnect.Data.Market"),
-                        new PythonType("QuoteBar", "QuantConnect.Data.Market"),
-                        new PythonType("List", "System.Collections.Generic")
+                        new CppType("TradeBar", "QuantConnect.Data.Market"),
+                        new CppType("QuoteBar", "QuantConnect.Data.Market"),
+                        new CppType("List", "System.Collections.Generic")
                         {
-                            TypeParameters = {new PythonType("Tick", "QuantConnect.Data.Market")}
+                            TypeParameters = {new CppType("Tick", "QuantConnect.Data.Market")}
                         },
-                        new PythonType("Any", "typing")
+                        new CppType("Any", "typing")
                     }
                 };
             }
@@ -77,9 +77,9 @@ namespace QuantConnectStubsGenerator.Parser
             var symbol = TypeConverter.GetSymbol(node);
             if (symbol is IPropertySymbol propertySymbol && !propertySymbol.IsReadOnly)
             {
-                VisitMethod(node, "__setitem__", node.ParameterList.Parameters, new PythonType("None"));
+                VisitMethod(node, "__setitem__", node.ParameterList.Parameters, new CppType("None"));
 
-                var valueParameter = new Parameter<PythonType>("value", type);
+                var valueParameter = new Parameter<CppType>("value", type);
                 _currentClass.Methods.Last().Parameters.Add(valueParameter);
             }
         }
@@ -88,7 +88,7 @@ namespace QuantConnectStubsGenerator.Parser
             MemberDeclarationSyntax node,
             string name,
             SeparatedSyntaxList<ParameterSyntax> parameterList,
-            PythonType returnType)
+            CppType returnType)
         {
             if (HasModifier(node, "private") || HasModifier(node, "internal"))
             {
@@ -122,12 +122,12 @@ namespace QuantConnectStubsGenerator.Parser
                 // Python.NET converts an enum return type to an int
                 if (cls?.IsEnum() == true)
                 {
-                    returnType = new PythonType("int");
+                    returnType = new CppType("int");
                     returnTypeIsEnum = true;
                 }
             }
 
-            var method = new Method<PythonType>(name, returnType)
+            var method = new Method<CppType>(name, returnType)
             {
                 Static = HasModifier(node, "static"),
                 File = _model.SyntaxTree.FilePath
@@ -171,7 +171,7 @@ namespace QuantConnectStubsGenerator.Parser
 
                     if (CheckDocSuggestsPandasDataFrame(text))
                     {
-                        parsedParameter.Type = new PythonType("DataFrame", "pandas");
+                        parsedParameter.Type = new CppType("DataFrame", "pandas");
                     }
 
                     docStrings.Add($":param {parsedParameter.Name}: {text}");
@@ -208,7 +208,7 @@ namespace QuantConnectStubsGenerator.Parser
 
                 if (CheckDocSuggestsPandasDataFrame(text))
                 {
-                    method.ReturnType = new PythonType("DataFrame", "pandas");
+                    method.ReturnType = new CppType("DataFrame", "pandas");
                 }
             }
 
@@ -227,10 +227,10 @@ namespace QuantConnectStubsGenerator.Parser
             ImprovePythonAccessorIfNecessary(method);
         }
 
-        private Parameter<PythonType> ParseParameter(ParameterSyntax syntax, string methodName)
+        private Parameter<CppType> ParseParameter(ParameterSyntax syntax, string methodName)
         {
             var originalName = syntax.Identifier.Text;
-            var parameter = new Parameter<PythonType>(FormatParameterName(originalName), TypeConverter.GetType(syntax.Type));
+            var parameter = new Parameter<CppType>(FormatParameterName(originalName), TypeConverter.GetType(syntax.Type));
 
             if (syntax.Modifiers.Any(modifier => modifier.Text == "params"))
             {
@@ -241,16 +241,16 @@ namespace QuantConnectStubsGenerator.Parser
             // Symbol parameters can be both a Symbol or a string in most methods
             if (parameter.Type.Namespace == "QuantConnect" && parameter.Type.Name == "Symbol")
             {
-                var unionType = new PythonType("Union", "typing");
+                var unionType = new CppType("Union", "typing");
                 unionType.TypeParameters.Add(parameter.Type);
-                unionType.TypeParameters.Add(new PythonType("str"));
+                unionType.TypeParameters.Add(new CppType("str"));
                 parameter.Type = unionType;
             }
 
             // System.Object parameters can accept anything
             if (parameter.Type.Namespace == "System" && parameter.Type.Name == "Object")
             {
-                parameter.Type = new PythonType("Any", "typing");
+                parameter.Type = new CppType("Any", "typing");
             }
 
             if (syntax.Default != null)
@@ -300,7 +300,7 @@ namespace QuantConnectStubsGenerator.Parser
                 return;
             }
 
-            _currentClass.InheritsFrom.Add(new PythonType("Iterable", "typing")
+            _currentClass.InheritsFrom.Add(new CppType("Iterable", "typing")
             {
                 TypeParameters = parsedReturnType.TypeParameters
             });
@@ -322,7 +322,7 @@ namespace QuantConnectStubsGenerator.Parser
 
             if (_currentClass.Methods.All(m => m.Name != "__len__"))
             {
-                _currentClass.Methods.Add(new Method<PythonType>("__len__", new PythonType("int")));
+                _currentClass.Methods.Add(new Method<CppType>("__len__", new CppType("int")));
             }
         }
 
@@ -331,7 +331,7 @@ namespace QuantConnectStubsGenerator.Parser
         /// If we spot such a Python-friendly accessor, we remove the non-Python-friendly accessor and improve
         /// the Python-friendly accessor's definition.
         /// </summary>
-        private void ImprovePythonAccessorIfNecessary(Method<PythonType> newMethod)
+        private void ImprovePythonAccessorIfNecessary(Method<CppType> newMethod)
         {
             if (newMethod.Parameters.Count != 1 || newMethod.Parameters[0].Type.ToLanguageString() != "typing.Type")
             {

@@ -11,11 +11,11 @@ namespace QuantConnectStubsGenerator.Tests.Utility
         [Test]
         public void GetClassesInOrderShouldReturnTheRegisteredClassesInSuchOrderToMinimizeForwardReferences()
         {
-            var classA = new Class(new PythonType("A"));
-            var classB = new Class(new PythonType("B"));
-            var classC = new Class(new PythonType("C"));
+            var classA = new Class<PythonType>(new PythonType("A"));
+            var classB = new Class<PythonType>(new PythonType("B"));
+            var classC = new Class<PythonType>(new PythonType("C"));
 
-            var dependencyGraph = new DependencyGraph();
+            var dependencyGraph = new DependencyGraph<PythonType>();
 
             dependencyGraph.AddClass(classA);
             dependencyGraph.AddClass(classB);

@@ -11,8 +11,8 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void GetUsedTypesShouldReturnAllTypesInTheClassAndItsInnerClasses()
         {
-            var parentCls = new Class(new PythonType("ParentClass", "QuantConnect"));
-            var childCls = new Class(new PythonType("ChildClass", "QuantConnect"))
+            var parentCls = new Class<PythonType>(new PythonType("ParentClass", "QuantConnect"));
+            var childCls = new Class<PythonType>(new PythonType("ChildClass", "QuantConnect"))
             {
                 ParentClass = parentCls,
                 MetaClass = new PythonType("ABCMeta", "abc")
@@ -42,9 +42,9 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void GetUsedTypesShouldReturnAllTypesInTheClassAndItsNonStaticProperties()
         {
-            var cls = new Class(new PythonType("MyClass", "QuantConnect"));
+            var cls = new Class<PythonType>(new PythonType("MyClass", "QuantConnect"));
 
-            cls.Properties.Add(new Property("Property1")
+            cls.Properties.Add(new Property<PythonType>("Property1")
             {
                 Type = new PythonType("MyProperty", "QuantConnect"),
                 Abstract = true
@@ -61,9 +61,9 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void GetUsedTypesShouldReturnAllTypesInTheClassAndItsStaticProperties()
         {
-            var cls = new Class(new PythonType("MyClass", "QuantConnect"));
+            var cls = new Class<PythonType>(new PythonType("MyClass", "QuantConnect"));
 
-            cls.Properties.Add(new Property("Property1")
+            cls.Properties.Add(new Property<PythonType>("Property1")
             {
                 Type = new PythonType("MyProperty", "QuantConnect"),
                 Abstract = true,
@@ -80,17 +80,17 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void GetUsedTypesShouldReturnAllTypesInTheClassAndItsMethods()
         {
-            var cls = new Class(new PythonType("MyClass", "QuantConnect"));
+            var cls = new Class<PythonType>(new PythonType("MyClass", "QuantConnect"));
 
-            cls.Methods.Add(new Method("Method1", new PythonType("ReturnType", "QuantConnect"))
+            cls.Methods.Add(new Method<PythonType>("Method1", new PythonType("ReturnType", "QuantConnect"))
             {
                 Overload = true,
                 Static = true,
                 Parameters =
                 {
-                    new Parameter("parameter1", new PythonType("Parameter1", "QuantConnect")),
-                    new Parameter("parameter2", new PythonType("Parameter2", "QuantConnect")),
-                    new Parameter("parameter3", new PythonType("Parameter3", "QuantConnect"))
+                    new Parameter<PythonType>("parameter1", new PythonType("Parameter1", "QuantConnect")),
+                    new Parameter<PythonType>("parameter2", new PythonType("Parameter2", "QuantConnect")),
+                    new Parameter<PythonType>("parameter3", new PythonType("Parameter3", "QuantConnect"))
                 }
             });
 

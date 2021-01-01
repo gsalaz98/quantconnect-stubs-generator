@@ -5,13 +5,13 @@ using QuantConnectStubsGenerator.Model;
 
 namespace QuantConnectStubsGenerator.Renderer
 {
-    public class ClassRenderer : ObjectRenderer<Class>
+    public class PythonClassRenderer : PythonObjectRenderer<Class<PythonType>>
     {
-        public ClassRenderer(StreamWriter writer, int indentationLevel) : base(writer, indentationLevel)
+        public PythonClassRenderer(StreamWriter writer, int indentationLevel) : base(writer, indentationLevel)
         {
         }
 
-        public override void Render(Class cls)
+        public override void Render(Class<PythonType> cls)
         {
             RenderClassHeader(cls);
             RenderInnerClasses(cls);
@@ -19,7 +19,7 @@ namespace QuantConnectStubsGenerator.Renderer
             RenderMethods(cls);
         }
 
-        private void RenderClassHeader(Class cls)
+        private void RenderClassHeader(Class<PythonType> cls)
         {
             Write($"class {cls.Type.Name.Split(".").Last()}");
 
@@ -52,9 +52,9 @@ namespace QuantConnectStubsGenerator.Renderer
             WriteLine();
         }
 
-        private void RenderInnerClasses(Class cls)
+        private void RenderInnerClasses(Class<PythonType> cls)
         {
-            var classRenderer = CreateRenderer<ClassRenderer>();
+            var classRenderer = CreateRenderer<PythonClassRenderer>();
 
             foreach (var innerClass in cls.InnerClasses)
             {
@@ -62,9 +62,9 @@ namespace QuantConnectStubsGenerator.Renderer
             }
         }
 
-        private void RenderProperties(Class cls)
+        private void RenderProperties(Class<PythonType> cls)
         {
-            var propertyRenderer = CreateRenderer<PropertyRenderer>();
+            var propertyRenderer = CreateRenderer<PythonPropertyRenderer>();
 
             foreach (var property in cls.Properties)
             {
@@ -72,9 +72,9 @@ namespace QuantConnectStubsGenerator.Renderer
             }
         }
 
-        private void RenderMethods(Class cls)
+        private void RenderMethods(Class<PythonType> cls)
         {
-            var methodRenderer = CreateRenderer<MethodRenderer>();
+            var methodRenderer = CreateRenderer<PythonMethodRenderer>();
 
             foreach (var method in cls.Methods)
             {

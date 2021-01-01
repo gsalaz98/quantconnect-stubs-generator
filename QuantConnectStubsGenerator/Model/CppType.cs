@@ -16,10 +16,20 @@ namespace QuantConnectStubsGenerator.Model
 
         public bool IsAction { get; set; }
 
-        public CppType(string name, string ns = null)
+        public CppType()
+        {
+        }
+
+        public CppType New(string name, string ns = null)
         {
             Name = name;
             Namespace = ns;
+            return this;
+        }
+
+        public CppType(string name, string ns = null)
+        {
+            New(Name, ns);
         }
 
         public string GetBaseName()
@@ -34,23 +44,18 @@ namespace QuantConnectStubsGenerator.Model
                 return Alias;
             }
 
-            if (IsNamedTypeParameter)
-            {
-                return $"{Namespace}_{Name}".Replace('.', '_');
-            }
-
             var str = "";
 
             if (Namespace != null)
             {
-                str += $"{Namespace}.";
+                str += $"{Namespace}.".Replace(".", "::");
             }
 
             str += Name;
 
             if (TypeParameters.Count == 0)
             {
-                return str;
+                return str.Replace(".", "::");
             }
 
             str += "[";

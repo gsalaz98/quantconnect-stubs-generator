@@ -11,10 +11,10 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void GetNamespacesShouldReturnAllRegisteredNamespaces()
         {
-            var context = new ParseContext();
+            var context = new ParseContext<PythonType>();
 
-            var ns1 = new Namespace("ns1");
-            var ns2 = new Namespace("ns2");
+            var ns1 = new Namespace<PythonType>("ns1");
+            var ns2 = new Namespace<PythonType>("ns2");
 
             context.RegisterNamespace(ns1);
             context.RegisterNamespace(ns2);
@@ -29,8 +29,8 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void GetNamespaceByNameShouldReturnNamespaceIfItHasBeenRegistered()
         {
-            var context = new ParseContext();
-            var ns = new Namespace("Test");
+            var context = new ParseContext<PythonType>();
+            var ns = new Namespace<PythonType>("Test");
 
             context.RegisterNamespace(ns);
 
@@ -40,7 +40,7 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void GetNamespaceByNameShouldThrowIfNamespaceHasNotBeenRegistered()
         {
-            var context = new ParseContext();
+            var context = new ParseContext<PythonType>();
 
             Assert.Throws<ArgumentException>(() => context.GetNamespaceByName("Test"));
         }
@@ -48,8 +48,8 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void HasNamespaceShouldReturnTrueIfNamespaceHasBeenRegistered()
         {
-            var context = new ParseContext();
-            var ns = new Namespace("Test");
+            var context = new ParseContext<PythonType>();
+            var ns = new Namespace<PythonType>("Test");
             context.RegisterNamespace(ns);
 
             Assert.IsTrue(context.HasNamespace(ns.Name));
@@ -58,7 +58,7 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void HasNamespaceShouldReturnFalseIfNamespaceHasNotBeenRegistered()
         {
-            var context = new ParseContext();
+            var context = new ParseContext<PythonType>();
 
             Assert.IsFalse(context.HasNamespace("Test"));
         }

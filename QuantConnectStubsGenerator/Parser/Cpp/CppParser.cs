@@ -7,11 +7,11 @@ namespace QuantConnectStubsGenerator.Parser
     /// <summary>
     /// Python parser
     /// </summary>
-    public class PythonParser : BaseParser<PythonType>
+    public class CppParser : BaseParser<CppType>
     {
-        protected PythonParser(ParseContext<PythonType> context, SemanticModel model) : base(context, model)
+        protected CppParser(ParseContext<CppType> context, SemanticModel model) : base(context, model)
         {
-            TypeConverter = new PythonTypeConverter(model);
+            TypeConverter = new CppTypeConverter(model);
         }
 
         protected override string FormatValue(string value)

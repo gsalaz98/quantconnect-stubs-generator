@@ -4,28 +4,29 @@ using System.Linq;
 
 namespace QuantConnectStubsGenerator.Model
 {
-    public class Namespace
+    public class Namespace<T>
+        where T : ILanguageType<T>, new()
     {
         public string Name { get; }
 
-        private readonly IDictionary<string, Class> _classes = new Dictionary<string, Class>();
+        private readonly IDictionary<string, Class<T>> _classes = new Dictionary<string, Class<T>>();
 
         public Namespace(string name)
         {
             Name = name;
         }
 
-        public IEnumerable<Class> GetClasses()
+        public IEnumerable<Class<T>> GetClasses()
         {
             return _classes.Values;
         }
 
-        public IEnumerable<Class> GetParentClasses()
+        public IEnumerable<Class<T>> GetParentClasses()
         {
             return _classes.Values.Where(cls => cls.ParentClass == null);
         }
 
-        public Class GetClassByType(PythonType type)
+        public Class<T> GetClassByType(T type)
         {
             var key = GetClassKey(type);
 
@@ -37,22 +38,22 @@ namespace QuantConnectStubsGenerator.Model
             throw new ArgumentException($"No class has been registered with type '{type.ToLanguageString()}'");
         }
 
-        public bool HasClass(PythonType type)
+        public bool HasClass(T type)
         {
             return _classes.ContainsKey(GetClassKey(type));
         }
 
-        public void RegisterClass(Class cls)
+        public void RegisterClass(Class<T> cls)
         {
             _classes[GetClassKey(cls)] = cls;
         }
 
-        private string GetClassKey(PythonType type)
+        private string GetClassKey(T type)
         {
             return $"{type.Namespace}.{type.Name}";
         }
 
-        private string GetClassKey(Class cls)
+        private string GetClassKey(Class<T> cls)
         {
             return GetClassKey(cls.Type);
         }

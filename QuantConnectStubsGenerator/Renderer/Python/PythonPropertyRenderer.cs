@@ -4,13 +4,13 @@ using QuantConnectStubsGenerator.Utility;
 
 namespace QuantConnectStubsGenerator.Renderer
 {
-    public class PropertyRenderer : ObjectRenderer<Property>
+    public class PythonPropertyRenderer : PythonObjectRenderer<Property<PythonType>>
     {
-        public PropertyRenderer(StreamWriter writer, int indentationLevel) : base(writer, indentationLevel)
+        public PythonPropertyRenderer(StreamWriter writer, int indentationLevel) : base(writer, indentationLevel)
         {
         }
 
-        public override void Render(Property property)
+        public override void Render(Property<PythonType> property)
         {
             if (property.Static)
             {
@@ -22,7 +22,7 @@ namespace QuantConnectStubsGenerator.Renderer
             }
         }
 
-        private void RenderAttribute(Property property)
+        private void RenderAttribute(Property<PythonType> property)
         {
             // Some attributes have names in C# that are illegal in Python
             if (property.Name == "None" || property.Name == "True" || property.Name == "False")
@@ -48,7 +48,7 @@ namespace QuantConnectStubsGenerator.Renderer
             WriteLine();
         }
 
-        private void RenderProperty(Property property)
+        private void RenderProperty(Property<PythonType> property)
         {
             // Some properties have names starting with "@", which is invalid in Python
             if (property.Name.StartsWith("@"))

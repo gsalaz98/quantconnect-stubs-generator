@@ -92,12 +92,12 @@ namespace QuantConnectStubsGenerator
             }
 
             // Create an empty ParseContext which will be filled with all relevant information during parsing
-            var context = new ParseContext();
+            var context = new ParseContext<PythonType>();
 
             // Parse all syntax trees using all parsers
-            ParseSyntaxTrees<ClassParser, PythonType>(context, syntaxTrees, compilation);
-            ParseSyntaxTrees<PropertyParser, PythonType>(context, syntaxTrees, compilation);
-            ParseSyntaxTrees<MethodParser, PythonType>(context, syntaxTrees, compilation);
+            ParseSyntaxTrees<PythonType, ClassParser>(context, syntaxTrees, compilation);
+            ParseSyntaxTrees<PythonType, PropertyParser>(context, syntaxTrees, compilation);
+            ParseSyntaxTrees<PythonType, MethodParser>(context, syntaxTrees, compilation);
 
             // Perform post-processing on all parsed classes
             foreach (var ns in context.GetNamespaces())
@@ -136,32 +136,32 @@ namespace QuantConnectStubsGenerator
         }
 
         private void ParseSyntaxTrees<T, P>(
-            ParseContext context,
+            ParseContext<T> context,
             IEnumerable<SyntaxTree> syntaxTrees,
             CSharpCompilation compilation)
-            where T : BaseParser<P>
-            where P : ILanguageType<P>
+            where T : ILanguageType<T>, new()
+            where P : BaseParser<T>
         {
             foreach (var tree in syntaxTrees)
             {
-                Logger.Debug($"Running {typeof(T).Name} on {tree.FilePath}");
+                Logger.Debug($"Running {typeof(P).Name} on {tree.FilePath}");
 
                 var model = compilation.GetSemanticModel(tree);
-                var parser = (T) Activator.CreateInstance(typeof(T), context, model);
+                var parser = (P) Activator.CreateInstance(typeof(P), context, model);
 
                 if (parser == null)
                 {
-                    throw new SystemException($"Could not create {typeof(T).Name} for {tree.FilePath}");
+                    throw new SystemException($"Could not create {typeof(P).Name} for {tree.FilePath}");
                 }
 
                 parser.Visit(tree.GetRoot());
             }
         }
 
-        private void PostProcessClass(Class cls)
+        private void PostProcessClass(Class<PythonType> cls)
         {
             var pythonMethods = new Dictionary<string, PythonType>();
-            var pythonMethodsToRemove = new List<Method>();
+            var pythonMethodsToRemove = new List<Method<PythonType>>();
 
             foreach (var method in cls.Methods.Where(m => m.File != null && m.File.EndsWith(".Python.cs")))
             {
@@ -183,7 +183,7 @@ namespace QuantConnectStubsGenerator
             }
         }
 
-        private void MarkOverloads(Class cls)
+        private void MarkOverloads(Class<PythonType> cls)
         {
             var duplicateMethodNames = cls.Methods
                 .GroupBy(m => m.Name)
@@ -199,7 +199,7 @@ namespace QuantConnectStubsGenerator
             }
         }
 
-        private void CreateEmptyNamespaces(ParseContext context)
+        private void CreateEmptyNamespaces(ParseContext<PythonType> context)
         {
             // The key is the namespace, the value is whether there is already a namespace for it
             // After adding all namespaces, the keys of entries with a false value represent the gap namespaces
@@ -226,12 +226,12 @@ namespace QuantConnectStubsGenerator
             {
                 if (!exists)
                 {
-                    context.RegisterNamespace(new Namespace(ns));
+                    context.RegisterNamespace(new Namespace<PythonType>(ns));
                 }
             }
         }
 
-        private void RenderNamespace(Namespace ns, string outputPath)
+        private void RenderNamespace(Namespace<PythonType> ns, string outputPath)
         {
             // Don't generate empty .pyi files
             if (!ns.GetParentClasses().Any())
@@ -244,7 +244,7 @@ namespace QuantConnectStubsGenerator
             EnsureParentDirectoriesExist(outputPath);
 
             using var writer = new StreamWriter(outputPath);
-            var renderer = new NamespaceRenderer(writer, 0);
+            var renderer = new PythonNamespaceRenderer(writer, 0);
             renderer.Render(ns);
         }
 
@@ -279,7 +279,7 @@ namespace QuantConnectStubsGenerator
             EnsureParentDirectoriesExist(setupPath);
 
             using var writer = new StreamWriter(setupPath);
-            var renderer = new SetupRenderer(writer, _leanPath, _outputDirectory);
+            var renderer = new PythonSetupRenderer(writer, _leanPath, _outputDirectory);
             renderer.Render();
         }
 

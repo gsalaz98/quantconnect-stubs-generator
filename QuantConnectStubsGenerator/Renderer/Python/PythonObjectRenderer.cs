@@ -5,14 +5,14 @@ using QuantConnectStubsGenerator.Utility;
 
 namespace QuantConnectStubsGenerator.Renderer
 {
-    public abstract class ObjectRenderer<T> : BaseRenderer
+    public abstract class PythonObjectRenderer<T> : BaseRenderer
     {
         private readonly int _indentationLevel;
 
         private readonly string _indentation;
         private bool _isAtLineStart = true;
 
-        protected ObjectRenderer(StreamWriter writer, int indentationLevel) : base(writer)
+        protected PythonObjectRenderer(StreamWriter writer, int indentationLevel) : base(writer)
         {
             _indentationLevel = indentationLevel;
 

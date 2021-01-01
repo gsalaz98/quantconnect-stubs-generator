@@ -3,25 +3,26 @@ using System.Linq;
 
 namespace QuantConnectStubsGenerator.Model
 {
-    public class Class
+    public class Class<T>
+        where T : ILanguageType<T>, new()
     {
-        public PythonType Type { get; }
+        public T Type { get; }
 
         public string Summary { get; set; }
 
         public bool Static { get; set; }
         public bool Interface { get; set; }
 
-        public IList<PythonType> InheritsFrom { get; set; } = new List<PythonType>();
-        public PythonType MetaClass { get; set; }
+        public IList<T> InheritsFrom { get; set; } = new List<T>();
+        public T MetaClass { get; set; }
 
-        public Class ParentClass { get; set; }
-        public IList<Class> InnerClasses { get; } = new List<Class>();
+        public Class<T> ParentClass { get; set; }
+        public IList<Class<T>> InnerClasses { get; } = new List<Class<T>>();
 
-        public IList<Property> Properties { get; } = new List<Property>();
-        public IList<Method> Methods { get; } = new List<Method>();
+        public IList<Property<T>> Properties { get; } = new List<Property<T>>();
+        public IList<Method<T>> Methods { get; } = new List<Method<T>>();
 
-        public Class(PythonType type)
+        public Class(T type)
         {
             Type = type;
         }
@@ -31,12 +32,12 @@ namespace QuantConnectStubsGenerator.Model
             return InheritsFrom.Any(type => type.ToLanguageString() == "System.Enum");
         }
 
-        public IEnumerable<PythonType> GetUsedTypes()
+        public IEnumerable<T> GetUsedTypes()
         {
-            var types = new HashSet<PythonType>();
+            var types = new HashSet<T>();
 
             // Parse types recursively to properly return deep generics
-            var typesToProcess = new Queue<PythonType>(GetUsedTypesToIterateOver());
+            var typesToProcess = new Queue<T>(GetUsedTypesToIterateOver());
 
             while (typesToProcess.Count > 0)
             {
@@ -53,20 +54,20 @@ namespace QuantConnectStubsGenerator.Model
             // Python classes with type parameters always extend typing.Generic[T, ...] where T = typing.TypeVar('T')
             if (Type.TypeParameters.Count > 0)
             {
-                types.Add(new PythonType("Generic", "typing"));
-                types.Add(new PythonType("TypeVar", "typing"));
+                types.Add(new T().New("Generic", "typing"));
+                types.Add(new T().New("TypeVar", "typing"));
             }
 
             // PropertyRenderer adds the @abc.abstractmethod decorator to abstract properties
             if (Properties.Any(p => !p.Static && p.Abstract))
             {
-                types.Add(new PythonType("abstractmethod", "abc"));
+                types.Add(new T().New("abstractmethod", "abc"));
             }
 
             // MethodRenderer adds the @typing.overload decorator to overloaded methods
             if (Methods.Any(m => m.Overload))
             {
-                types.Add(new PythonType("overload", "typing"));
+                types.Add(new T().New("overload", "typing"));
             }
 
             foreach (var innerClass in InnerClasses)
@@ -83,7 +84,7 @@ namespace QuantConnectStubsGenerator.Model
         /// <summary>
         /// Returns the used types which need to be recursively iterated over in GetUsedTypes().
         /// </summary>
-        private IEnumerable<PythonType> GetUsedTypesToIterateOver()
+        public IEnumerable<T> GetUsedTypesToIterateOver()
         {
             yield return Type;
 

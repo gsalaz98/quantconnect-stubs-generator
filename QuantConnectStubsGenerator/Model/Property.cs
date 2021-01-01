@@ -1,9 +1,10 @@
 namespace QuantConnectStubsGenerator.Model
 {
-    public class Property
+    public class Property<T>
+        where T : ILanguageType<T>
     {
         public string Name { get; }
-        public PythonType Type { get; set; }
+        public T Type { get; set; }
 
         public bool ReadOnly { get; set; }
         public bool Static { get; set; }

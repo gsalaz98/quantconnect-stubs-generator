@@ -5,13 +5,13 @@ using QuantConnectStubsGenerator.Model;
 namespace QuantConnectStubsGenerator.Parser
 {
     /// <summary>
-    /// The TypeConverter is responsible for converting AST nodes into PythonType instances.
+    /// The TypeConverter is responsible for converting AST nodes into CppType instances.
     /// </summary>
-    public class PythonTypeConverter : ITypeConverter<PythonType>
+    public class CppTypeConverter : ITypeConverter<CppType>
     {
         private readonly SemanticModel _model;
 
-        public PythonTypeConverter(SemanticModel model)
+        public CppTypeConverter(SemanticModel model)
         {
             _model = model;
         }
@@ -30,7 +30,7 @@ namespace QuantConnectStubsGenerator.Parser
         /// Returns the Python type of the given node.
         /// Returns an aliased typing.Any if there is no Python type for the given symbol.
         /// </summary>
-        public PythonType GetType(SyntaxNode node, bool skipPythonTypeCheck = false)
+        public CppType GetType(SyntaxNode node, bool skipCppTypeCheck = false)
         {
             var symbol = GetSymbol(node);
 
@@ -38,48 +38,48 @@ namespace QuantConnectStubsGenerator.Parser
             {
                 return node.ToFullString().Trim() switch
                 {
-                    "PyList" => new PythonType("List", "typing")
+                    "PyList" => new CppType("List", "typing")
                     {
-                        TypeParameters = new List<PythonType> {new PythonType("Any", "typing")}
+                        TypeParameters = new List<CppType> {new CppType("Any", "typing")}
                     },
-                    "PyDict" => new PythonType("Dict", "typing")
+                    "PyDict" => new CppType("Dict", "typing")
                     {
-                        TypeParameters = new List<PythonType>
+                        TypeParameters = new List<CppType>
                         {
-                            new PythonType("Any", "typing"), new PythonType("Any", "typing")
+                            new CppType("Any", "typing"), new CppType("Any", "typing")
                         }
                     },
-                    _ => new PythonType("Any", "typing")
+                    _ => new CppType("Any", "typing")
                 };
             }
 
-            return GetType(symbol, skipPythonTypeCheck);
+            return GetType(symbol, skipCppTypeCheck);
         }
 
         /// <summary>
         /// Returns the Python type of the given symbol.
         /// Returns an aliased typing.Any if there is no Python type for the given symbol.
         /// </summary>
-        public PythonType GetType(ISymbol symbol, bool skipPythonTypeCheck = false)
+        public CppType GetType(ISymbol symbol, bool skipCppTypeCheck = false)
         {
             // Handle arrays
             if (symbol is IArrayTypeSymbol arrayTypeSymbol)
             {
-                var listType = new PythonType("List", "typing");
-                listType.TypeParameters.Add(GetType(arrayTypeSymbol.ElementType));
+                var listType = new CppType("List", "typing");
+                listType.TypeParameters.Add((CppType)GetType(arrayTypeSymbol.ElementType));
                 return listType;
             }
 
             // Use typing.Any as fallback if there is no type information in the given symbol
             if (symbol == null || symbol.Name == "" || symbol.ContainingNamespace == null)
             {
-                return new PythonType("Any", "typing");
+                return new CppType("Any", "typing");
             }
 
             var name = GetTypeName(symbol);
             var ns = symbol.ContainingNamespace.ToDisplayString();
 
-            var type = new PythonType(name, ns);
+            var type = new CppType(name, ns);
 
             // Process type parameters
             if (symbol is ITypeParameterSymbol typeParameterSymbol)
@@ -95,7 +95,7 @@ namespace QuantConnectStubsGenerator.Parser
                     && !namedTypeSymbol.DelegateInvokeMethod.ToDisplayString().StartsWith("System.Func")
                     && !namedTypeSymbol.DelegateInvokeMethod.ToDisplayString().StartsWith("System.Action"))
                 {
-                    return new PythonType("Any", "typing")
+                    return new CppType("Any", "typing")
                     {
                         Alias = type.Namespace.Replace('.', '_') + "_" + type.Name.Replace('.', '_')
                     };
@@ -110,11 +110,11 @@ namespace QuantConnectStubsGenerator.Parser
                         paramType.IsNamedTypeParameter = true;
                     }
 
-                    type.TypeParameters.Add(paramType);
+                    type.TypeParameters.Add((CppType)paramType);
                 }
             }
 
-            return (PythonType)TypeToTargetLanguageType(type, skipPythonTypeCheck);
+            return (CppType)TypeToTargetLanguageType(type, skipCppTypeCheck);
         }
 
         public string GetTypeName(ISymbol symbol)
@@ -146,15 +146,15 @@ namespace QuantConnectStubsGenerator.Parser
         /// This method handles conversions like the one from System.String to str.
         /// If the Type object doesn't need to be converted, the originally provided type is returned.
         /// </summary>
-        public PythonType TypeToTargetLanguageType(PythonType type, bool skipPythonTypeCheck = false)
+        public CppType TypeToTargetLanguageType(CppType type, bool skipCppTypeCheck = false)
         {
-            if (type.Namespace == "System" && !skipPythonTypeCheck)
+            if (type.Namespace == "System" && !skipCppTypeCheck)
             {
                 switch (type.Name)
                 {
                     case "Char":
                     case "String":
-                        return new PythonType("str");
+                        return new CppType("str");
                     case "Byte":
                     case "SByte":
                     case "Int16":
@@ -163,19 +163,19 @@ namespace QuantConnectStubsGenerator.Parser
                     case "UInt16":
                     case "UInt32":
                     case "UInt64":
-                        return new PythonType("int");
+                        return new CppType("int");
                     case "Single":
                     case "Double":
                     case "Decimal":
-                        return new PythonType("float");
+                        return new CppType("float");
                     case "Boolean":
-                        return new PythonType("bool");
+                        return new CppType("bool");
                     case "Void":
-                        return new PythonType("None");
+                        return new CppType("None");
                     case "DateTime":
-                        return new PythonType("datetime", "datetime");
+                        return new CppType("datetime", "datetime");
                     case "TimeSpan":
-                        return new PythonType("timedelta", "datetime");
+                        return new CppType("timedelta", "datetime");
                     case "Nullable":
                         type.Name = "Optional";
                         type.Namespace = "typing";
@@ -206,7 +206,7 @@ namespace QuantConnectStubsGenerator.Parser
                     alias = $"{type.Namespace.Replace('.', '_')}_{alias}";
                 }
 
-                return new PythonType("Any", "typing")
+                return new CppType("Any", "typing")
                 {
                     Alias = alias
                 };

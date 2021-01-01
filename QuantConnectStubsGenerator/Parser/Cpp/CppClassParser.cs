@@ -8,9 +8,9 @@ using QuantConnectStubsGenerator.Utility;
 
 namespace QuantConnectStubsGenerator.Parser
 {
-    public class ClassParser : PythonParser
+    public class CppClassParser : CppParser
     {
-        public ClassParser(ParseContext<PythonType> context, SemanticModel model) : base(context, model)
+        public CppClassParser(ParseContext<CppType> context, SemanticModel model) : base(context, model)
         {
         }
 
@@ -44,9 +44,9 @@ namespace QuantConnectStubsGenerator.Parser
             _currentClass = cls;
         }
 
-        private Class<PythonType> ParseClass(BaseTypeDeclarationSyntax node)
+        private Class<CppType> ParseClass(BaseTypeDeclarationSyntax node)
         {
-            return new Class<PythonType>(TypeConverter.GetType(node, true))
+            return new Class<CppType>(TypeConverter.GetType(node, true))
             {
                 Static = HasModifier(node, "static"),
                 Summary = ParseSummary(node),
@@ -74,9 +74,9 @@ namespace QuantConnectStubsGenerator.Parser
             return summary;
         }
 
-        private IEnumerable<PythonType> ParseInheritedTypes(BaseTypeDeclarationSyntax node)
+        private IEnumerable<CppType> ParseInheritedTypes(BaseTypeDeclarationSyntax node)
         {
-            var types = new List<PythonType>();
+            var types = new List<CppType>();
 
             var symbol = _model.GetDeclaredSymbol(node);
             if (symbol == null)
@@ -173,17 +173,17 @@ namespace QuantConnectStubsGenerator.Parser
             return types;
         }
 
-        private PythonType ParseMetaClass(BaseTypeDeclarationSyntax node)
+        private CppType ParseMetaClass(BaseTypeDeclarationSyntax node)
         {
             if (node is InterfaceDeclarationSyntax || HasModifier(node, "abstract"))
             {
-                return new PythonType("ABCMeta", "abc");
+                return new CppType("ABCMeta", "abc");
             }
 
             return null;
         }
 
-        private PythonType ValidateInheritedType(PythonType currentType, PythonType inheritedType)
+        private CppType ValidateInheritedType(CppType currentType, CppType inheritedType)
         {
             if (inheritedType.IsNamedTypeParameter)
             {
@@ -204,7 +204,7 @@ namespace QuantConnectStubsGenerator.Parser
             return inheritedType;
         }
 
-        private PythonType ToAnyAlias(PythonType type)
+        private CppType ToAnyAlias(CppType type)
         {
             var alias = type.Name.Replace('.', '_');
             if (type.Namespace != null)
@@ -212,13 +212,13 @@ namespace QuantConnectStubsGenerator.Parser
                 alias = $"{type.Namespace.Replace('.', '_')}_{alias}";
             }
 
-            return new PythonType("Any", "typing")
+            return new CppType("Any", "typing")
             {
                 Alias = alias
             };
         }
 
-        private bool ShouldSkipBaseType(PythonType currentType, string ns, string name)
+        private bool ShouldSkipBaseType(CppType currentType, string ns, string name)
         {
             // System.Object extends from System.Object in the AST, we skip this base type in Python
             if (currentType.Namespace == "System" && currentType.Name == "Object" && ns == "System" && name == "Object")

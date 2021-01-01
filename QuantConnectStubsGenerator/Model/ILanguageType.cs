@@ -13,5 +13,6 @@ namespace QuantConnectStubsGenerator.Model
         bool IsAction { get; set; }
         string GetBaseName();
         string ToLanguageString(bool ignoreAlias = false);
+        T New(string name, string ns = null);
     }
 }

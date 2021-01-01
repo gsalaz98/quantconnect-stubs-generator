@@ -9,17 +9,17 @@ using QuantConnectStubsGenerator.Model;
 namespace QuantConnectStubsGenerator.Parser
 {
     public abstract class BaseParser<T> : CSharpSyntaxWalker
-        where T : ILanguageType<T>
+        where T : ILanguageType<T>, new()
     {
-        protected readonly ParseContext _context;
+        protected readonly ParseContext<T> _context;
         protected readonly SemanticModel _model;
 
         protected ITypeConverter<T> TypeConverter;
 
-        protected Namespace _currentNamespace;
-        protected Class _currentClass;
+        protected Namespace<T> _currentNamespace;
+        protected Class<T> _currentClass;
 
-        protected BaseParser(ParseContext context, SemanticModel model)
+        protected BaseParser(ParseContext<T> context, SemanticModel model)
         {
             _context = context;
             _model = model;
@@ -31,7 +31,7 @@ namespace QuantConnectStubsGenerator.Parser
 
             if (!_context.HasNamespace(name))
             {
-                _context.RegisterNamespace(new Namespace(name));
+                _context.RegisterNamespace(new Namespace<T>(name));
             }
 
             _currentNamespace = _context.GetNamespaceByName(name);

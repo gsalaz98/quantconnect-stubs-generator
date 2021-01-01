@@ -6,9 +6,9 @@ using QuantConnectStubsGenerator.Utility;
 
 namespace QuantConnectStubsGenerator.Parser
 {
-    public class PropertyParser : PythonParser
+    public class CppPropertyParser : CppParser
     {
-        public PropertyParser(ParseContext<PythonType> context, SemanticModel model) : base(context, model)
+        public CppPropertyParser(ParseContext<CppType> context, SemanticModel model) : base(context, model)
         {
         }
 
@@ -24,7 +24,7 @@ namespace QuantConnectStubsGenerator.Parser
 
         public override void VisitEventDeclaration(EventDeclarationSyntax node)
         {
-            var type = new PythonType("List", "typing")
+            var type = new CppType("List", "typing")
             {
                 TypeParameters = {TypeConverter.GetType(node.Type)}
             };
@@ -34,7 +34,7 @@ namespace QuantConnectStubsGenerator.Parser
 
         public override void VisitEventFieldDeclaration(EventFieldDeclarationSyntax node)
         {
-            var type = new PythonType("List", "typing")
+            var type = new CppType("List", "typing")
             {
                 TypeParameters = {TypeConverter.GetType(node.Declaration.Type)}
             };
@@ -44,7 +44,7 @@ namespace QuantConnectStubsGenerator.Parser
 
         public override void VisitEnumMemberDeclaration(EnumMemberDeclarationSyntax node)
         {
-            var property = new Property<PythonType>(node.Identifier.Text)
+            var property = new Property<CppType>(node.Identifier.Text)
             {
                 Value = node.EqualsValue != null
                     ? FormatValue(node.EqualsValue.Value.ToString())
@@ -62,7 +62,7 @@ namespace QuantConnectStubsGenerator.Parser
             _currentClass.Properties.Add(property);
         }
 
-        private void VisitProperty(BasePropertyDeclarationSyntax node, PythonType type, string name)
+        private void VisitProperty(BasePropertyDeclarationSyntax node, CppType type, string name)
         {
             if (HasModifier(node, "private"))
             {
@@ -93,7 +93,7 @@ namespace QuantConnectStubsGenerator.Parser
                 // Python.NET converts an enum return type to an int
                 if (cls?.IsEnum() == true)
                 {
-                    type = new PythonType("int");
+                    type = new CppType("int");
                     typeIsEnum = true;
                 }
             }
@@ -101,10 +101,10 @@ namespace QuantConnectStubsGenerator.Parser
             // Security.Data is of type dynamic but can be used like it is of type DynamicSecurityData
             if (_currentClass.Type.ToLanguageString() == "QuantConnect.Securities.Security" && name == "Data")
             {
-                type = new PythonType("DynamicSecurityData", "QuantConnect.Securities");
+                type = new CppType("DynamicSecurityData", "QuantConnect.Securities");
             }
 
-            var property = new Property<PythonType>(name)
+            var property = new Property<CppType>(name)
             {
                 Type = type,
                 ReadOnly = TypeConverter.GetSymbol(node) is IPropertySymbol symbol && symbol.IsReadOnly,
@@ -133,7 +133,7 @@ namespace QuantConnectStubsGenerator.Parser
             _currentClass.Properties.Add(property);
         }
 
-        private void VisitField(BaseFieldDeclarationSyntax node, PythonType type)
+        private void VisitField(BaseFieldDeclarationSyntax node, CppType type)
         {
             if (HasModifier(node, "private"))
             {
@@ -147,7 +147,7 @@ namespace QuantConnectStubsGenerator.Parser
 
             foreach (var variable in node.Declaration.Variables)
             {
-                var property = new Property<PythonType>(variable.Identifier.Text)
+                var property = new Property<CppType>(variable.Identifier.Text)
                 {
                     Type = type,
                     ReadOnly = HasModifier(node, "readonly") || HasModifier(node, "const"),

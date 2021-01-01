@@ -7,13 +7,13 @@ using QuantConnectStubsGenerator.Utility;
 
 namespace QuantConnectStubsGenerator.Renderer
 {
-    public class NamespaceRenderer : ObjectRenderer<Namespace>
+    public class PythonNamespaceRenderer : PythonObjectRenderer<Namespace<PythonType>>
     {
-        public NamespaceRenderer(StreamWriter writer, int indentationLevel) : base(writer, indentationLevel)
+        public PythonNamespaceRenderer(StreamWriter writer, int indentationLevel) : base(writer, indentationLevel)
         {
         }
 
-        public override void Render(Namespace ns)
+        public override void Render(Namespace<PythonType> ns)
         {
             var usedTypes = ns
                 .GetParentClasses()
@@ -107,9 +107,9 @@ namespace QuantConnectStubsGenerator.Renderer
             WriteLine();
         }
 
-        private void RenderClasses(Namespace ns)
+        private void RenderClasses(Namespace<PythonType> ns)
         {
-            var dependencyGraph = new DependencyGraph();
+            var dependencyGraph = new DependencyGraph<PythonType>();
 
             foreach (var cls in ns.GetParentClasses())
             {
@@ -124,7 +124,7 @@ namespace QuantConnectStubsGenerator.Renderer
                 }
             }
 
-            var classRenderer = CreateRenderer<ClassRenderer>(false);
+            var classRenderer = CreateRenderer<PythonClassRenderer>(false);
 
             foreach (var cls in dependencyGraph.GetClassesInOrder())
             {

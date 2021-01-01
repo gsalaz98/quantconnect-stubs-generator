@@ -10,16 +10,17 @@ namespace QuantConnectStubsGenerator.Model
     /// The parsers are responsible for filling the ParseContext with all relevant information.
     /// Afterwards, this information is used by the renderers to create the necessary Python stubs.
     /// </summary>
-    public class ParseContext
+    public class ParseContext<T>
+        where T : ILanguageType<T>, new()
     {
-        private readonly IDictionary<string, Namespace> _namespaces = new Dictionary<string, Namespace>();
+        private readonly IDictionary<string, Namespace<T>> _namespaces = new Dictionary<string, Namespace<T>>();
 
-        public IEnumerable<Namespace> GetNamespaces()
+        public IEnumerable<Namespace<T>> GetNamespaces()
         {
             return _namespaces.Values;
         }
 
-        public Namespace GetNamespaceByName(string name)
+        public Namespace<T> GetNamespaceByName(string name)
         {
             if (_namespaces.ContainsKey(name))
             {
@@ -34,7 +35,7 @@ namespace QuantConnectStubsGenerator.Model
             return _namespaces.ContainsKey(name);
         }
 
-        public void RegisterNamespace(Namespace ns)
+        public void RegisterNamespace(Namespace<T> ns)
         {
             _namespaces[ns.Name] = ns;
         }

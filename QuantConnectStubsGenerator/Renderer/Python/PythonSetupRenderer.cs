@@ -7,14 +7,14 @@ using log4net;
 
 namespace QuantConnectStubsGenerator.Renderer
 {
-    public class SetupRenderer : BaseRenderer
+    public class PythonSetupRenderer : BaseRenderer
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(SetupRenderer));
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(PythonSetupRenderer));
 
         private readonly string _leanPath;
         private readonly string _outputDirectory;
 
-        public SetupRenderer(StreamWriter writer, string leanPath, string outputDirectory) : base(writer)
+        public PythonSetupRenderer(StreamWriter writer, string leanPath, string outputDirectory) : base(writer)
         {
             _leanPath = leanPath;
             _outputDirectory = outputDirectory;

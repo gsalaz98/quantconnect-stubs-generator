@@ -20,7 +20,7 @@ namespace QuantConnectStubsGenerator
 
             if (args.Length != 3)
             {
-                Logger.Error("Usage: dotnet run <Lean directory> <runtime directory> <output directory>");
+                Logger.Error("Usage: dotnet run <Lean directory> <runtime directory> <output directory> <language>=python,cpp [optional]");
                 Environment.Exit(1);
             }
 
@@ -32,6 +32,17 @@ namespace QuantConnectStubsGenerator
 
             try
             {
+                if (args.Length < 3)
+                {
+                    throw new ArgumentException($"Expected 3+ arguments, found {args.Length}");
+                }
+
+                if (args.Length == 4 && args[3].ToLowerInvariant() == "cpp")
+                {
+                    new CppGenerator(args[0], args[1], args[2]).Run();
+                    return;
+                }
+
                 new PythonGenerator(args[0], args[1], args[2]).Run();
             }
             catch (Exception e)

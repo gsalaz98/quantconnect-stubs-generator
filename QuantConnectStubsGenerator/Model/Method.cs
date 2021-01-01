@@ -2,10 +2,11 @@ using System.Collections.Generic;
 
 namespace QuantConnectStubsGenerator.Model
 {
-    public class Method
+    public class Method<T>
+        where T : ILanguageType<T>
     {
         public string Name { get; }
-        public PythonType ReturnType { get; set; }
+        public T ReturnType { get; set; }
 
         public bool Static { get; set; }
         public bool Overload { get; set; }
@@ -14,9 +15,9 @@ namespace QuantConnectStubsGenerator.Model
 
         public string File { get; set; }
 
-        public IList<Parameter> Parameters { get; } = new List<Parameter>();
+        public IList<Parameter<T>> Parameters { get; } = new List<Parameter<T>>();
 
-        public Method(string name, PythonType returnType)
+        public Method(string name, T returnType)
         {
             Name = name;
             ReturnType = returnType;

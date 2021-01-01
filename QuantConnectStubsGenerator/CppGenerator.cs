@@ -92,12 +92,12 @@ namespace QuantConnectStubsGenerator
             }
 
             // Create an empty ParseContext which will be filled with all relevant information during parsing
-            var context = new ParseContext();
+            var context = new ParseContext<CppType>();
 
             // Parse all syntax trees using all parsers
-            //ParseSyntaxTrees<ClassParser>(context, syntaxTrees, compilation);
-            //ParseSyntaxTrees<PropertyParser>(context, syntaxTrees, compilation);
-            //ParseSyntaxTrees<MethodParser>(context, syntaxTrees, compilation);
+            ParseSyntaxTrees<CppType, CppClassParser>(context, syntaxTrees, compilation);
+            ParseSyntaxTrees<CppType, CppPropertyParser>(context, syntaxTrees, compilation);
+            ParseSyntaxTrees<CppType, CppMethodParser>(context, syntaxTrees, compilation);
 
             // Perform post-processing on all parsed classes
             foreach (var ns in context.GetNamespaces())
@@ -114,54 +114,49 @@ namespace QuantConnectStubsGenerator
                 }
             }
 
-            // Create empty namespaces to fill gaps in between namespaces like "A.B" and "A.B.C.D"
-            // This is needed to make import resolution work correctly
-            CreateEmptyNamespaces(context);
-
             // Render .pyi files containing stubs for all parsed namespaces
             foreach (var ns in context.GetNamespaces())
             {
                 var namespacePath = ns.Name.Replace('.', '/');
-                var basePath = Path.GetFullPath($"{namespacePath}/__init__", _outputDirectory);
+                var basePath = Path.GetFullPath($"{namespacePath}", _outputDirectory);
 
-                RenderNamespace(ns, basePath + ".pyi");
-                GeneratePyLoader(ns.Name, basePath + ".py");
+                RenderNamespace(ns, basePath + ".h");
             }
 
             // Generate stubs for the clr module
-            GenerateClrStubs();
+            //GenerateClrStubs();
 
             // Create setup.py
-            GenerateSetup();
+            //GenerateSetup();
         }
 
         private void ParseSyntaxTrees<T, P>(
-            ParseContext context,
+            ParseContext<T> context,
             IEnumerable<SyntaxTree> syntaxTrees,
             CSharpCompilation compilation)
-            where T : BaseParser<P>
-            where P : ILanguageType<P>
+            where T : ILanguageType<T>, new()
+            where P : BaseParser<T>
         {
             foreach (var tree in syntaxTrees)
             {
-                Logger.Debug($"Running {typeof(T).Name} on {tree.FilePath}");
+                Logger.Debug($"Running {typeof(P).Name} on {tree.FilePath}");
 
                 var model = compilation.GetSemanticModel(tree);
-                var parser = (T) Activator.CreateInstance(typeof(T), context, model);
+                var parser = (P) Activator.CreateInstance(typeof(P), context, model);
 
                 if (parser == null)
                 {
-                    throw new SystemException($"Could not create {typeof(T).Name} for {tree.FilePath}");
+                    throw new SystemException($"Could not create {typeof(P).Name} for {tree.FilePath}");
                 }
 
                 parser.Visit(tree.GetRoot());
             }
         }
 
-        private void PostProcessClass(Class cls)
+        private void PostProcessClass(Class<CppType> cls)
         {
-            var pythonMethods = new Dictionary<string, PythonType>();
-            var pythonMethodsToRemove = new List<Method>();
+            var pythonMethods = new Dictionary<string, CppType>();
+            var pythonMethodsToRemove = new List<Method<CppType>>();
 
             foreach (var method in cls.Methods.Where(m => m.File != null && m.File.EndsWith(".Python.cs")))
             {
@@ -183,7 +178,7 @@ namespace QuantConnectStubsGenerator
             }
         }
 
-        private void MarkOverloads(Class cls)
+        private void MarkOverloads(Class<CppType> cls)
         {
             var duplicateMethodNames = cls.Methods
                 .GroupBy(m => m.Name)
@@ -199,41 +194,9 @@ namespace QuantConnectStubsGenerator
             }
         }
 
-        private void CreateEmptyNamespaces(ParseContext context)
+        private void RenderNamespace(Namespace<CppType> ns, string outputPath)
         {
-            // The key is the namespace, the value is whether there is already a namespace for it
-            // After adding all namespaces, the keys of entries with a false value represent the gap namespaces
-            var namespaceMapping = new Dictionary<string, bool>();
-
-            foreach (var ns in context.GetNamespaces())
-            {
-                namespaceMapping[ns.Name] = true;
-
-                var parts = ns.Name.Split(".");
-
-                for (var i = 1; i <= parts.Length; i++)
-                {
-                    var partialNamespace = string.Join(".", parts.Take(i));
-
-                    if (!namespaceMapping.ContainsKey(partialNamespace))
-                    {
-                        namespaceMapping[partialNamespace] = false;
-                    }
-                }
-            }
-
-            foreach (var (ns, exists) in namespaceMapping)
-            {
-                if (!exists)
-                {
-                    context.RegisterNamespace(new Namespace(ns));
-                }
-            }
-        }
-
-        private void RenderNamespace(Namespace ns, string outputPath)
-        {
-            // Don't generate empty .pyi files
+            // Don't generate empty header files
             if (!ns.GetParentClasses().Any())
             {
                 return;
@@ -244,43 +207,8 @@ namespace QuantConnectStubsGenerator
             EnsureParentDirectoriesExist(outputPath);
 
             using var writer = new StreamWriter(outputPath);
-            var renderer = new NamespaceRenderer(writer, 0);
+            var renderer = new CppNamespaceRenderer(writer, 0);
             renderer.Render(ns);
-        }
-
-        private void GeneratePyLoader(string ns, string outputPath)
-        {
-            Logger.Info($"Generating {outputPath}");
-
-            EnsureParentDirectoriesExist(outputPath);
-
-            using var writer = new StreamWriter(outputPath);
-            var renderer = new PyLoaderRenderer(writer);
-            renderer.Render(ns);
-        }
-
-        private void GenerateClrStubs()
-        {
-            var outputPath = Path.GetFullPath("clr/__init__.pyi", _outputDirectory);
-            Logger.Info($"Generating {outputPath}");
-
-            EnsureParentDirectoriesExist(outputPath);
-
-            using var writer = new StreamWriter(outputPath);
-            var renderer = new ClrStubsRenderer(writer);
-            renderer.Render();
-        }
-
-        private void GenerateSetup()
-        {
-            var setupPath = Path.GetFullPath("setup.py", _outputDirectory);
-            Logger.Info($"Generating {setupPath}");
-
-            EnsureParentDirectoriesExist(setupPath);
-
-            using var writer = new StreamWriter(setupPath);
-            var renderer = new SetupRenderer(writer, _leanPath, _outputDirectory);
-            renderer.Render();
         }
 
         private void EnsureParentDirectoriesExist(string path)

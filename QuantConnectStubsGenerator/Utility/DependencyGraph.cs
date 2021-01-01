@@ -11,20 +11,21 @@ namespace QuantConnectStubsGenerator.Utility
     /// The DependencyGraph is used by the NamespaceRenderer as a sort of queue
     /// to render classes in such order to limit the amount of forward references.
     /// </summary>
-    public class DependencyGraph
+    public class DependencyGraph<T>
+        where T : ILanguageType<T>, new()
     {
-        private readonly IDictionary<PythonType, Class> _classes = new Dictionary<PythonType, Class>();
+        private readonly IDictionary<T, Class<T>> _classes = new Dictionary<T, Class<T>>();
 
-        private readonly AdjacencyGraph<PythonType, Edge<PythonType>> _graph =
-            new AdjacencyGraph<PythonType, Edge<PythonType>>();
+        private readonly AdjacencyGraph<T, Edge<T>> _graph =
+            new AdjacencyGraph<T, Edge<T>>();
 
-        public void AddClass(Class cls)
+        public void AddClass(Class<T> cls)
         {
             _classes[cls.Type] = cls;
             _graph.AddVertex(cls.Type);
         }
 
-        public void AddDependency(Class cls, PythonType type)
+        public void AddDependency(Class<T> cls, T type)
         {
             if (!_classes.ContainsKey(cls.Type))
             {
@@ -45,7 +46,7 @@ namespace QuantConnectStubsGenerator.Utility
                 return;
             }
 
-            var edge = new Edge<PythonType>(cls.Type, type);
+            var edge = new Edge<T>(cls.Type, type);
             _graph.AddEdge(edge);
 
             // We can't determine the best class order if there are cycles in their dependencies
@@ -56,24 +57,24 @@ namespace QuantConnectStubsGenerator.Utility
             }
         }
 
-        public IEnumerable<Class> GetClassesInOrder()
+        public IEnumerable<Class<T>> GetClassesInOrder()
         {
             return _graph.TopologicalSort().Select(type => _classes[type]).Reverse();
         }
 
-        private PythonType GetParentType(PythonType type)
+        private T GetParentType(T type)
         {
             if (!type.Name.Contains("."))
             {
                 return type;
             }
 
-            return new PythonType(type.Name.Substring(0, type.Name.IndexOf('.')), type.Namespace)
-            {
-                Alias = type.Alias,
-                IsNamedTypeParameter = type.IsNamedTypeParameter,
-                TypeParameters = type.TypeParameters
-            };
+            var t = new T().New(type.Name.Substring(0, type.Name.IndexOf('.')), type.Namespace);
+            t.Alias = type.Alias;
+            t.IsNamedTypeParameter = type.IsNamedTypeParameter;
+            t.TypeParameters = type.TypeParameters;
+
+            return t;
         }
     }
 }

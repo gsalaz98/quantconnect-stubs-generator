@@ -6,13 +6,13 @@ using QuantConnectStubsGenerator.Utility;
 
 namespace QuantConnectStubsGenerator.Renderer
 {
-    public class MethodRenderer : ObjectRenderer<Method>
+    public class PythonMethodRenderer : PythonObjectRenderer<Method<PythonType>>
     {
-        public MethodRenderer(StreamWriter writer, int indentationLevel) : base(writer, indentationLevel)
+        public PythonMethodRenderer(StreamWriter writer, int indentationLevel) : base(writer, indentationLevel)
         {
         }
 
-        public override void Render(Method method)
+        public override void Render(Method<PythonType> method)
         {
             if (method.Static)
             {
@@ -46,7 +46,7 @@ namespace QuantConnectStubsGenerator.Renderer
             WriteLine();
         }
 
-        private string ParameterToString(Parameter parameter)
+        private string ParameterToString(Parameter<PythonType> parameter)
         {
             var str = $"{parameter.Name}: {parameter.Type.ToLanguageString()}";
 

@@ -11,10 +11,10 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void GetClassesShouldReturnAllRegisteredClasses()
         {
-            var ns = new Namespace("Test");
+            var ns = new Namespace<PythonType>("Test");
 
-            var parentCls = new Class(new PythonType("ParentClass", "QuantConnect"));
-            var childCls = new Class(new PythonType("ChildClass", "QuantConnect"))
+            var parentCls = new Class<PythonType>(new PythonType("ParentClass", "QuantConnect"));
+            var childCls = new Class<PythonType>(new PythonType("ChildClass", "QuantConnect"))
             {
                 ParentClass = parentCls
             };
@@ -34,10 +34,10 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void GetParentClassesShouldReturnAllRegisteredParentClasses()
         {
-            var ns = new Namespace("Test");
+            var ns = new Namespace<PythonType>("Test");
 
-            var parentCls = new Class(new PythonType("ParentClass", "QuantConnect"));
-            var childCls = new Class(new PythonType("ChildClass", "QuantConnect"))
+            var parentCls = new Class<PythonType>(new PythonType("ParentClass", "QuantConnect"));
+            var childCls = new Class<PythonType>(new PythonType("ChildClass", "QuantConnect"))
             {
                 ParentClass = parentCls
             };
@@ -56,8 +56,8 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void GetClassByTypeShouldReturnThePreviouslyRegisteredClass()
         {
-            var ns = new Namespace("Test");
-            var cls = new Class(new PythonType("MyClass", "QuantConnect"));
+            var ns = new Namespace<PythonType>("Test");
+            var cls = new Class<PythonType>(new PythonType("MyClass", "QuantConnect"));
             ns.RegisterClass(cls);
 
             Assert.AreEqual(cls, ns.GetClassByType(cls.Type));
@@ -66,7 +66,7 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void GetClassByTypeShouldThrowIfNotRegistered()
         {
-            var ns = new Namespace("Test");
+            var ns = new Namespace<PythonType>("Test");
 
             Assert.Throws<ArgumentException>(() => ns.GetClassByType(new PythonType("MyClass", "QuantConnect")));
         }
@@ -74,8 +74,8 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void HasClassShouldReturnTrueIfClassHasBeenRegistered()
         {
-            var ns = new Namespace("Test");
-            var cls = new Class(new PythonType("MyClass", "QuantConnect"));
+            var ns = new Namespace<PythonType>("Test");
+            var cls = new Class<PythonType>(new PythonType("MyClass", "QuantConnect"));
             ns.RegisterClass(cls);
 
             Assert.IsTrue(ns.HasClass(cls.Type));
@@ -84,7 +84,7 @@ namespace QuantConnectStubsGenerator.Tests.Model
         [Test]
         public void HasClassShouldReturnFalseIfClassHasNotBeenRegistered()
         {
-            var ns = new Namespace("Test");
+            var ns = new Namespace<PythonType>("Test");
 
             Assert.IsFalse(ns.HasClass(new PythonType("MyClass", "QuantConnect")));
         }
